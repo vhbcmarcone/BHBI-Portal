@@ -1,0 +1,32 @@
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlK9dZw_ADMGK8S0WVxmROAX-B2TVXir-nbmJJijlQ6V7U7d3VvT9HvsLsmSLk30Mc/exec";
+
+// Load logs when the page opens
+async function fetchLogs() {
+    const response = await fetch(SCRIPT_URL);
+    const data = await response.json();
+    const logContainer = document.getElementById('activityLog');
+    logContainer.innerHTML = ""; // Clear
+    
+    data.reverse().forEach(entry => {
+        const html = `
+            <div class="log-entry">
+                <span class="log-time">${new Date(entry.time).toLocaleString()}</span><br>
+                <span class="log-name">${entry.name}</span> logged: <br><i>${entry.file}</i>
+            </div>`;
+        logContainer.insertAdjacentHTML('beforeend', html);
+    });
+}
+
+// Send a new log to the Google Sheet
+async function logFileUpload() {
+    const name = document.getElementById('uploaderName').value;
+    const file = document.getElementById('fileName').value;
+    if(!name || !file) return alert("Fill in details");
+
+    await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({name: name, file: file})
+    });
+
+    fetchLogs(); // Refresh the sidebar
+}
